@@ -1,0 +1,221 @@
+{
+  "master": {
+    "tasks": [],
+    "metadata": {
+      "created": "2026-04-24T00:00:00.000Z",
+      "updated": "2026-04-24T00:00:00.000Z",
+      "description": "Default tag. Empty on scaffold."
+    }
+  },
+  "orchestrator": {
+    "tasks": [],
+    "metadata": {
+      "created": "2026-04-24T00:00:00.000Z",
+      "updated": "2026-04-24T00:00:00.000Z",
+      "description": "Owned by Axios. Cross-stream coordination."
+    }
+  },
+  "leia": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Scaffold Next.js 15 App Router (TypeScript, src/)",
+        "description": "Create package.json, tsconfig.json, next.config.mjs, postcss.config.mjs, tailwind.config.ts, components.json, app/ layout, and src/ tree. No Pages Router.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": []
+      },
+      {
+        "id": 2,
+        "title": "Install Tailwind v4 and lock @theme tokens in globals.css",
+        "description": "Paste the full @theme block from Design_System §2.1–§2.5 (color/radius/spacing/motion) for dark (default) and light variants. shadcn token names are non-negotiable.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [1]
+      },
+      {
+        "id": 3,
+        "title": "Load Inter, Fraunces, JetBrains Mono via next/font (self-hosted)",
+        "description": "Expose fonts as CSS variables (--font-sans, --font-serif, --font-mono) and wire into @theme font-family tokens.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [1]
+      },
+      {
+        "id": 4,
+        "title": "Build typography scale utilities (text-display-xl → text-phase)",
+        "description": "Implement the full type scale from Design_System §3 as Tailwind v4 utilities using @utility blocks.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [2, 3]
+      },
+      {
+        "id": 5,
+        "title": "Install shadcn/ui Essential components only (§9.1)",
+        "description": "button, input, textarea, card, dialog, dropdown-menu, tooltip, sonner, tabs, avatar, badge, separator. No Important or Skip-for-MVP installs.",
+        "status": "done",
+        "priority": "medium",
+        "dependencies": [2]
+      },
+      {
+        "id": 6,
+        "title": "Build <RoundedShell /> layout primitive",
+        "description": "src/components/shell/RoundedShell.tsx per Design_System §4. Desktop (≥1024): pinned 240px sidebar. Tablet (768–1023): collapsed 64px rail. Mobile (≤767): sidebar replaced by bottom tab bar; shell-gap collapses to 0.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [2]
+      },
+      {
+        "id": 7,
+        "title": "Zustand UI store (theme, sidebarCollapsed, reducedMotionOverride)",
+        "description": "src/stores/ui-store.ts persisted to localStorage. src/lib/theme.ts applies the .dark / :root.light class on <html> based on store + system preference.",
+        "status": "done",
+        "priority": "medium",
+        "dependencies": [1]
+      },
+      {
+        "id": 8,
+        "title": "src/types/film-state.ts — 12-value state enum",
+        "description": "Duplicate the canonical enum (pending, parsing, cie_building, character_refs, scene_images_pending, voice_synthesis, music_composition, scene_assembly, final_concat, complete, error, canceled). TODO marker to migrate to @clevroy/types once the shared package exists.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [1]
+      },
+      {
+        "id": 9,
+        "title": "Visual-check page at /dev/tokens",
+        "description": "app/(dev)/tokens/page.tsx renders every color, radius, spacing, typography, and motion token plus both theme variants, for Axios to verify fidelity before other agents build on top.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [2, 3, 4]
+      },
+      {
+        "id": 10,
+        "title": "Verify with next build and write coordination.md",
+        "description": "Run next build cleanly, then post a status note at /coordination.md pinging Axios.",
+        "status": "in-progress",
+        "priority": "high",
+        "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      }
+    ],
+    "metadata": {
+      "created": "2026-04-24T00:00:00.000Z",
+      "updated": "2026-04-24T00:00:00.000Z",
+      "description": "Leia — Foundation & Design System. Scaffolds Next.js 15 and locks design tokens so every other agent can build on top."
+    }
+  },
+  "lumen": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Foundation: film-state enum + copy module (phaseNarration + scene/activity entries)",
+        "description": "src/types/film-state.ts holds the 12-state enum with a TODO to migrate to @clevroy/types. src/lib/copy.ts centralizes every user-facing string this stream touches: the full Design_System §8.3 phase→copy table, sceneStripAriaLabel (CC-5), activityFeed labels. A reserved divider at the bottom of copy.ts is where Stratum appends its Realtime event formatters.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": []
+      },
+      {
+        "id": 2,
+        "title": "<SceneStrip /> component (live + browse modes)",
+        "description": "src/components/scene-strip/ per Design_System §8.5. 44×44 mobile / 56×56 desktop pills, 10px radius, 8px gap. Four states (empty/pending/ready/active) plus an error state per EC-G4. Roving tabindex (CC-4), aria-label=\"Scene {n}, {status}\", throttled polite live region for 'Scene N ready.' transitions (CC-5). Pulse disabled under prefers-reduced-motion (CC-2). Auto-scrolls the active pill to horizontal center. Exposes mode: 'live' | 'browse' so Kaiser can reuse it on the Results page.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [1]
+      },
+      {
+        "id": 3,
+        "title": "<ActivityFeed /> component",
+        "description": "src/components/activity-feed/ per Design_System §8.6 + EC-G7. HH:MM:SS local timestamps. Color+icon states (● active, ✓ complete, ! warning, ✕ error) — never color alone (CC-5). Auto-scroll while user is at bottom; 'Jump to latest' pill when scrolled up >40px. DOM cap 50 desktop / 30 mobile via matchMedia; older events behind 'View earlier events (N)' collapsible button, expanded in batches of 50 with a TODO to swap in @tanstack/react-virtual. aria-live='polite' throttled to one announcement per 3s.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [1]
+      },
+      {
+        "id": 4,
+        "title": "<PhaseNarration /> component",
+        "description": "src/components/phase-narration/ per Design_System §8.3. Fraunces italic 28px headline + Inter muted subline, centered. Framer Motion AnimatePresence crossfade — outgoing 200ms, incoming 450ms with 100ms overlap. useReducedMotion collapses to a single 150ms crossfade (CC-2). aria-live='polite' on the region makes this the canonical screen-reader source of truth for generation phase (CC-5). State→copy comes from src/lib/copy.ts.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [1]
+      },
+      {
+        "id": 5,
+        "title": "Coordination: tasks.json entry + coordination.md note",
+        "description": "Add this 'lumen' tag to .taskmaster/tasks/tasks.json. Post a status note to coordination.md for Axios — flag the agent-name collision (the scaffold agent is already using tag 'leia', and this stream was briefed with the same placeholder); pinged Axios to assign a canonical name. Also flag deps on Leia's globals.css, Fantem's CenterStage for integration, and Stratum's copy.ts additions + Realtime ActivityFeedEntry feed.",
+        "status": "done",
+        "priority": "medium",
+        "dependencies": []
+      }
+    ],
+    "metadata": {
+      "created": "2026-04-24T00:00:00.000Z",
+      "updated": "2026-04-24T00:00:00.000Z",
+      "description": "Streaming UI that wraps Fantem's <CenterStage /> during generation: <SceneStrip />, <ActivityFeed />, <PhaseNarration />, plus the shared state→copy table. Placeholder tag name — awaiting a canonical assignment from Axios (see coordination.md)."
+    }
+  },
+  "leon": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Define FilmSummary / Film / FilmsListResponse shapes",
+        "description": "src/types/film.ts — response shapes for GET /api/films (Backend_Handoff §8.3). Keep Leia's src/types/film-state.ts untouched (she owns its shape). Cursor-paginated list response, sort enum, helper isFilmInProgress.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": []
+      },
+      {
+        "id": 2,
+        "title": "Append Leon copy section to src/lib/copy.ts",
+        "description": "Add Home, Projects, FilmCard, and empty-state strings under a clearly labeled '// Leon —' section, matching the per-agent section pattern Leia established.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": []
+      },
+      {
+        "id": 3,
+        "title": "Build FilmCard component family",
+        "description": "src/components/film-card/: presentational FilmCard with cover, title, scene count, created date; three-dot overflow (Rename, Duplicate, Delete); 'New' badge until clicked (use-seen-films.ts local store); skeleton matching real layout shape; delete confirmation modal copy 'Delete this film? It can't be recovered.' [Keep it] [Delete it]; block delete when in-progress (EC-N9) with tooltip 'Still being shot. Cancel first, then delete.'.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [1, 2]
+      },
+      {
+        "id": 4,
+        "title": "Build empty-state components",
+        "description": "src/components/empty-states/: NoFilmsEmptyState ('No films yet. Paste a script and we'll start shooting.'), FilmNotFound (EC-N8 — identical 404/403 'We couldn't find that film' state), FilmRestore (soft-deleted within 30-day window with Restore CTA), FilmInProgressCard (EC-G3 — used at top of Home recent films row).",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [1, 2]
+      },
+      {
+        "id": 5,
+        "title": "Implement /home page",
+        "description": "app/(app)/home/page.tsx per Design_System §7.2. H1 'Welcome back, {first_name}', films-left subline + 'Buy more films' link, full-width 'Start a new film' primary card, horizontal Recent films row (max 8, 'View all' to /projects), Film-in-progress card (EC-G3), NoFilmsEmptyState branch. Skeletons matching layout; swap to 'Still loading your films…' after 3s.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [3, 4]
+      },
+      {
+        "id": 6,
+        "title": "Implement /projects page",
+        "description": "app/(app)/projects/page.tsx per Design_System §7.3. H1 'Your Films', search input + sort dropdown + 'New film' button toolbar; responsive grid (4/3/2/1 at desktop/tablet/mobile/narrow); useInfiniteFilms via Stratum; intersection observer for infinite scroll; FilmCard rows; same empty state as Home; skeleton grid + 3s 'Still loading' swap.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [3, 4]
+      },
+      {
+        "id": 7,
+        "title": "Coordination note + Stratum hook contract",
+        "description": "Prepend a Leon entry to coordination.md documenting (a) what's shipped, (b) the exact useUser / useRecentFilms / useInProgressFilm / useInfiniteFilms / useDeleteFilm / useRenameFilm / useDuplicateFilm / useRestoreFilm hook contracts I depend on from Stratum, (c) Leia scaffold deps still missing (app/ directory, globals.css with @theme, shadcn ui components, RoundedShell), (d) Nemi handoff for app/(app)/films/[id]/page.tsx — Nemi composes my FilmNotFound/FilmRestore for non-success branches.",
+        "status": "done",
+        "priority": "medium",
+        "dependencies": []
+      }
+    ],
+    "metadata": {
+      "created": "2026-04-24T00:00:00.000Z",
+      "updated": "2026-04-24T00:00:00.000Z",
+      "description": "Leon — Home, Projects, Empty States, FilmCard. Low-animation, TanStack-Query-heavy. Blocked on Leia (app/, globals.css, shadcn UI install, RoundedShell) and Stratum (useFilms hook family) for end-to-end verification."
+    }
+  }
+}
