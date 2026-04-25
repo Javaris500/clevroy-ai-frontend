@@ -4,6 +4,114 @@ A short ledger of cross-stream status notes for Axios. Append-only. Most recent 
 
 ---
 
+## 2026-04-24 — Leia: Theme v2 live, sidebar primitive installed, global primitives shipped
+
+**Owner:** Leia. **Branch:** `leia/scaffold` (will commit on top of `b3bc584`).
+
+**Theme v2 conflicts** — using Axios's read until told otherwise:
+- ✅ Light is the `:root` default; dark applies via `.dark` class.
+- ✅ `--font-serif` → Fraunces (overrides v2's Georgia). Brand_Guide §4.2.
+- ✅ `--font-mono` → JetBrains Mono (overrides v2's Menlo).
+
+### Shipped (T11–T19)
+
+- **`package.json`** — `framer-motion ^11`, `@tanstack/react-query ^5` added (already merged into the live install).
+- **`app/globals.css`** — full Theme v2 token block (OKLCH base, sidebar-* group, chart-*, derived radii) with the three font overrides. Reduced-motion handling and motion / spacing extensions retained from v1. `@theme inline` re-exports `--color-primary-hover`, `--color-primary-soft`, `--color-success`, `--color-warning` so callers can write `bg-primary-soft` directly.
+- **`src/lib/theme.ts` + `themeInitScript`** — toggles `.dark` (was `.light`). System preference is the fallback when no choice is persisted, so dark devices still paint dark on first frame even though `:root` is light.
+- **`src/stores/ui-store.ts`** — default `theme = "system"` (was `"dark"`). Existing persisted values migrate cleanly.
+- **`app/dev/tokens/page.tsx`** — every Theme v2 token (shadcn base, sidebar-07, chart, Clevroy extensions), three-card font-pairing row (Inter / Fraunces / JetBrains Mono with italic + roman samples), full type-scale walk, motion playground, shadow row, phase-narration table.
+- **`src/components/ui/sidebar.tsx`, `sheet.tsx`, `skeleton.tsx`, `src/hooks/use-mobile.tsx`** — installed via `npx shadcn@latest add sidebar` (new-york-v4). The CLI also re-wrote my old Button / Input / Tooltip / Separator with the standard variants. **Heads-up to other agents using my old `var(--color-...)` pattern:** the new bodies use `bg-primary` / `bg-card` / `bg-popover` directly, which is cleaner. Both styles work because of `@theme inline`.
+- **Button default size bumped to `h-11`** (44px) so we keep Global_Design_Rules §7 / DS §10.2 touch-target floor. Use `size="sm"` only inside dense desktop chrome.
+- **`src/components/shell/PagePanel.tsx`** — Global_Design_Rules §1, §2.1. Title (H1), optional subline, optional headerAction, default 12px-radius card, "Roomy" 32px gap before content. Use this as the page-open primitive — never re-style page titles per page.
+- **`src/components/shell/SectionHeader.tsx`** — H2 + optional subline + optional right-aligned action. Use inside PagePanel for "Recent films," "Voice & Music," etc.
+- **`src/components/ui/confirm-dialog.tsx`** — wraps shadcn dialog. Pulls `(cancel, confirm)` labels from `confirmVerbPairs` in `src/lib/copy.ts`. Default verb key `delete`. Destructive flag auto-derived for `delete | cancelGeneration | deleteAccount`. Pending state disables both buttons.
+- **`src/lib/copy.ts`** — appended a `// Leia —` section with `confirmVerbPairs` (delete, cancelGeneration, reshootScene, signOutDuringGeneration, deleteAccount, confirm). New keys go here, never inline at call sites — Ghost will lint for that.
+- **`src/components/shell/RoundedShell.tsx`** — rebuilt for v2. Outer frame is `bg-sidebar` with 12px shell-gap inset on tablet+, flush on mobile, safe-area-aware. Internals wrap `<SidebarProvider>` from shadcn so Iyo's sidebar-07 composition drops in cleanly. Auth / landing / onboarding routes opt out by simply not rendering RoundedShell at the route-group layout.
+- **`app/(app)/layout.tsx`** — new. Wraps the (app) group with RoundedShell + a `<SidebarPlaceholder />` aside (16rem wide, hidden on mobile) that reserves the layout slot for Iyo. Replace the placeholder with `import { AppSidebar } from "@/components/nav/Sidebar"` once Iyo ships. Auth-gating TODO is marked for Stratum's helper.
+- **`src/components/providers/query-provider.tsx`** + **`app/layout.tsx`** — single TanStack QueryClient mounted at the root with conservative defaults (30s staleTime, 5min gcTime, refetchOnWindowFocus on, mutation retries off). **Stratum: this is your client. Per-hook overrides via `useQuery({ ..., staleTime })` are fine.**
+
+### Verification
+
+- ✅ `npx tsc --noEmit` — zero errors in any Leia-owned file.
+- ✅ `/dev/tokens` renders both light + dark, every v2 token, the three fonts.
+- ✅ shadcn sidebar primitive imports without errors; `<SidebarProvider>` is in the tree at the (app) layout.
+- ⚠️ `npx next build` — still fails at `@/hooks/use-films` from Leon's home + projects pages. Stratum's responsibility (see "Stratum: ready" handoff below).
+
+### Stratum: ready (use the contract Leon documented below)
+
+You're unblocked. Foundation is locked:
+
+1. **TanStack Query is live.** `<QueryProvider>` mounts the client in `app/layout.tsx`. Don't create a second client.
+2. **Theme tokens are stable.** Use `bg-primary`, `text-foreground`, `bg-sidebar` etc. Never hardcode colors.
+3. **Film state enum.** `src/types/film-state.ts` — 12 values, plus `SceneStatus` and `ActivityKind` that the realtime stream agents need. Your Realtime payloads must use these literals verbatim. TODO marker is in the file for the eventual `@clevroy/types` migration.
+4. **Auth helper.** I left a TODO in `app/(app)/layout.tsx` — when your Supabase auth helper exists, gate the layout there.
+5. **Hooks contract.** Leon's status note (the next section down) lists the exact `useUser`, `useRecentFilms`, `useInProgressFilm`, `useInfiniteFilms`, and four mutation signatures their pages compile against. Match those and the build comes back online.
+
+### Open asks for the user (still)
+
+1. Confirm Theme v2 conflicts (default mode, font-serif, font-mono).
+2. Install `task-master-ai` globally so the shared `.taskmaster/` becomes manageable.
+3. Set `git config --global user.name` / `user.email`.
+4. Ghost's two: feature-flag mechanism + Settings → About version source.
+
+### Notes for the next agents
+
+- **Iyo:** mount your `<AppSidebar />` inside `<RoundedShell>` (in `app/(app)/layout.tsx` once your component exists). Sidebar-07 from new-york-v4 is the visual ref. Use shadcn's `<Sidebar variant="inset">` or `"floating"` if you want the rounded-panel feel; both are wired up.
+- **Anyone styling:** prefer `bg-card`, `text-foreground`, `bg-sidebar`, `rounded-lg` over arbitrary-value escapes. The `@theme inline` block makes them all work.
+- **Anyone writing copy:** new strings go in `src/lib/copy.ts` under your agent's section. Confirmation verbs go through `confirmVerbPairs`.
+
+— Leia
+
+---
+
+## 2026-04-24 — Axios: theme v2, sidebar-07, designer role, global rules
+
+**Owner:** Axios (orchestrator + designer)
+
+### What's new
+
+1. **Role expanded.** Axios is now also the designer. I own visual consistency across agents, the global pattern library, and final say on any design decision that crosses two streams.
+2. **Theme v2 dropped.** User supplied an OKLCH-based theme (warm-paper light + near-black dark, sidebar tokens included). Saved to `docs/Clevroy_Theme_v2.css`. **Leia has 11 new tasks** to migrate the scaffold to it.
+3. **Sidebar pattern picked.** We're using shadcn's `new-york-v4 / sidebar-07` block (https://ui.shadcn.com/view/new-york-v4/sidebar-07) — but composed *inside* our RoundedShell, not as a replacement for it.
+4. **Global Design Rules published** at `docs/Clevroy_Global_Design_Rules.md`. Every agent reads this once. It locks the seven shared primitives, five patterns, motion timings, spacing rhythms, icon contract, copy contract, a11y floor, shell pattern, and how each surface connects back to the centralized generation concept.
+
+### Three conflicts in theme v2 that need user resolution before Leia merges
+
+1. **Default mode flipped.** v1 docs locked dark-as-default for the app interior (Brand_Guide §2.3). v2 makes light the `:root` default. **My read:** intentional pivot — paper feel → studio feel. Leia builds it as v2 dictates. **Confirm if I'm wrong.**
+2. **Serif font is Georgia, not Fraunces.** v2 says `--font-serif: Georgia, serif`. Brand_Guide §4.2 specified Fraunces for hero display, book chapter titles, and the phase narration headline on the CenterStage. Georgia would dramatically change the cinematic feel of the generation screen narration. **My read:** v2's `--font-serif` is the tweakcn default and wasn't deliberately chosen. Leia keeps Fraunces wired into `--font-serif` via `next/font` and overrides v2's value. **Confirm.**
+3. **Mono is Menlo, not JetBrains Mono.** Same situation. Leia keeps JetBrains Mono. **Confirm.**
+
+If you want Georgia + Menlo, say the word and Leia switches. Until then, **assume Fraunces + JetBrains Mono stay**.
+
+### Critical-path snapshot
+
+```
+Leia (theme-v2 migration in flight) → unblocks Iyo's sidebar-07 install
+   ├─> Stratum (NEXT — hooks block Leon, Ghost, Fantem, Kaiser)
+   └─> Iyo (NEXT — sidebar-07 + RoundedShell composition)
+        └─> Leon (verification once Stratum hooks land)
+        └─> Fantem + Nemi (Nemi already shipped; Fantem builds CenterStage on top)
+        └─> Kaiser (after Nemi's SceneStrip browse mode is wired)
+        └─> Ghost (continuous; copy audit on every PR)
+```
+
+### Open asks for the user
+
+1. Confirm the three theme conflicts above (default mode flip, font-serif, font-mono).
+2. Install `task-master-ai` globally (still pending from Ghost's earlier note).
+3. Set `git config --global user.name` / `user.email` so agents can commit.
+4. Two minor questions still open from Ghost: feature-flag mechanism for Settings → Developer (LaunchDarkly / GrowthBook / env var?) and the version-string source for Settings → About (`package.json` / `NEXT_PUBLIC_APP_VERSION` / git SHA).
+
+### Reminder for every agent
+
+- New required reading: **`docs/Clevroy_Theme_v2.css`** and **`docs/Clevroy_Global_Design_Rules.md`**. Add them to your doc-read pass.
+- Nemi's stream temporarily worked under tag `lumen` — consolidated under `nemi`. If you see the lumen agent still active, point them at tag `nemi` going forward.
+- All eight tags now exist in `.taskmaster/tasks/tasks.json`: `master`, `orchestrator`, `leia`, `stratum`, `iyo`, `leon`, `fantem`, `nemi`, `kaiser`, `ghost`.
+
+— Axios
+
+---
+
 ## 2026-04-24 — Leia: Foundation & Design System scaffolded
 
 **Owner:** Leia (Next.js scaffold, Tailwind v4 token layer, fonts, type scale, shadcn essentials, RoundedShell, UI store, film-state enum, /dev/tokens).

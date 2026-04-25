@@ -1,122 +1,249 @@
 @import "tailwindcss";
 
 /*
- * Clevroy design token layer.
- * Sources: Clevroy_Brand_Guide.md §2, Clevroy_UI_Design_System.md §2.
+ * Clevroy design token layer — Theme v2.
  *
- * Dark mode is the default for the app interior (matches the screening-room
- * feel described in Design_System §1 principle 2). Light mode is applied by
- * adding the `light` class to <html>. Landing / book export default to light.
+ * Sources:
+ *   docs/Clevroy_Theme_v2.css              (OKLCH base, supplied 2026-04-24)
+ *   docs/Clevroy_Global_Design_Rules.md    (timing, spacing, accessibility)
+ *   Brand_Guide §2.1–§2.3, §4.2            (Cinematic Red, font lock)
+ *   UI_Design_System §2–§3, §11.4          (rems, reduced motion)
  *
- * Do not introduce new base hues here. Extend via the Brand Guide §2.2 table.
+ * Theme v2 deliberately flips from v1: light is the :root default; dark
+ * applies via the .dark class. Primary OKLCH ≈ Cinematic Red #C1272D, so
+ * the brand pull-through is preserved.
+ *
+ * Three v2 values are intentionally OVERRIDDEN here (Axios brief, 2026-04-24):
+ *   --font-serif   ← Fraunces  (v2 default Georgia)   Brand_Guide §4.2
+ *   --font-mono    ← JetBrains Mono  (v2 default Menlo)
+ *   --font-sans    ← Inter via next/font (kept consistent with v2's spirit)
  */
 
-@custom-variant light (&:is(.light, .light *));
+@custom-variant dark (&:is(.dark *));
 
-@theme {
-  /* Font families. next/font injects the underlying custom properties. */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
-    Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+/* ===== :root — light, default ===== */
+:root {
+  /* Theme v2 base */
+  --background: oklch(0.9543 0.0136 78.2625);
+  --foreground: oklch(0.1591 0 0);
+  --card: oklch(0.9773 0.0102 81.7952);
+  --card-foreground: oklch(0.1591 0 0);
+  --popover: oklch(0.9773 0.0102 81.7952);
+  --popover-foreground: oklch(0.1591 0 0);
+  --primary: oklch(0.5882 0.2309 28.2936);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9062 0.0167 79.3472);
+  --secondary-foreground: oklch(0.1591 0 0);
+  --muted: oklch(0.9214 0.0166 79.3486);
+  --muted-foreground: oklch(0.5031 0.0178 76.9461);
+  --accent: oklch(0.9773 0.0102 81.7952);
+  --accent-foreground: oklch(0.5882 0.2309 28.2936);
+  --destructive: oklch(0.5882 0.2309 28.2936);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.8655 0.0205 84.5921);
+  --input: oklch(0.9773 0.0102 81.7952);
+  --ring: oklch(0.5882 0.2309 28.2936);
+
+  --chart-1: oklch(0.5882 0.2309 28.2936);
+  --chart-2: oklch(0.3931 0.0134 76.4510);
+  --chart-3: oklch(0.6171 0.0189 76.0226);
+  --chart-4: oklch(0.7448 0.0180 76.0692);
+  --chart-5: oklch(0.8655 0.0205 84.5921);
+
+  --sidebar: oklch(0.9543 0.0136 78.2625);
+  --sidebar-foreground: oklch(0.1591 0 0);
+  --sidebar-primary: oklch(0.5882 0.2309 28.2936);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.9773 0.0102 81.7952);
+  --sidebar-accent-foreground: oklch(0.5882 0.2309 28.2936);
+  --sidebar-border: oklch(0.8655 0.0205 84.5921);
+  --sidebar-ring: oklch(0.5882 0.2309 28.2936);
+
+  /* === Font families — OVERRIDE v2's Georgia/Menlo defaults ===
+     next/font (app/layout.tsx) injects --font-inter, --font-fraunces,
+     --font-jetbrains-mono. Brand_Guide §4.2 locks Fraunces + JetBrains Mono. */
+  --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-serif: var(--font-fraunces), ui-serif, Georgia, Cambria,
     "Times New Roman", serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular,
     Menlo, Monaco, Consolas, monospace;
 
-  /* ===== Color tokens — dark mode (default for app interior) =====
-     These names mirror the shadcn/ui convention exactly. Do not rename. */
-  --color-background: #0D0D0D;
-  --color-foreground: #F5EFE6;
-  --color-card: #161616;
-  --color-card-foreground: #F5EFE6;
-  --color-popover: #1F1F1F;
-  --color-popover-foreground: #F5EFE6;
-  --color-primary: #C1272D;
-  --color-primary-foreground: #F5EFE6;
-  --color-secondary: #1F1F1F;
-  --color-secondary-foreground: #F5EFE6;
-  --color-muted: #161616;
-  --color-muted-foreground: #9A9A9A;
-  --color-accent: #1F1F1F;
-  --color-accent-foreground: #F5EFE6;
-  --color-destructive: #C1272D;
-  --color-destructive-foreground: #F5EFE6;
-  --color-border: #262626;
-  --color-input: #262626;
-  --color-ring: #C1272D;
+  --radius: 0.75rem;
 
-  /* Clevroy extensions */
-  --color-shell: #050505;
-  --color-panel-elev: #1F1F1F;
-  --color-primary-hover: #8F1D22;
-  --color-primary-soft: rgba(193, 39, 45, 0.15);
-  --color-success: #2F7D5C;
-  --color-warning: #C88A2C;
+  /* Shadow stack (light) */
+  --shadow-x: 0px;
+  --shadow-y: 4px;
+  --shadow-blur: 12px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.08;
+  --shadow-color: 25, 23, 20;
+  --shadow-2xs: 0px 4px 12px 0px hsl(25 23% 20% / 0.04);
+  --shadow-xs: 0px 4px 12px 0px hsl(25 23% 20% / 0.04);
+  --shadow-sm: 0px 4px 12px 0px hsl(25 23% 20% / 0.08), 0px 1px 2px -1px hsl(25 23% 20% / 0.08);
+  --shadow: 0px 4px 12px 0px hsl(25 23% 20% / 0.08), 0px 1px 2px -1px hsl(25 23% 20% / 0.08);
+  --shadow-md: 0px 4px 12px 0px hsl(25 23% 20% / 0.08), 0px 2px 4px -1px hsl(25 23% 20% / 0.08);
+  --shadow-lg: 0px 4px 12px 0px hsl(25 23% 20% / 0.08), 0px 4px 6px -1px hsl(25 23% 20% / 0.08);
+  --shadow-xl: 0px 4px 12px 0px hsl(25 23% 20% / 0.08), 0px 8px 10px -1px hsl(25 23% 20% / 0.08);
+  --shadow-2xl: 0px 4px 12px 0px hsl(25 23% 20% / 0.20);
 
-  /* ===== Radius tokens ===== */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 12px;  /* signature panel radius — do not tweak */
-  --radius-xl: 16px;  /* outer shell frame */
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
+  --tracking-normal: -0.02em;
+  --spacing: 0.25rem;
 
-  /* ===== Spacing extensions ===== */
+  /* === Clevroy extensions (not in v2) === */
+  --primary-hover: oklch(0.4682 0.1965 28.2936);   /* ≈ Red Deep #8F1D22 */
+  --primary-soft: oklch(0.5882 0.2309 28.2936 / 0.15);
+  --success: oklch(0.5380 0.0820 162.0);
+  --warning: oklch(0.6800 0.1300 70.0);
+
+  /* Spacing extensions (Design_System §10.3) */
   --spacing-shell-gap: 12px;
   --spacing-safe-top: env(safe-area-inset-top, 0px);
   --spacing-safe-bottom: env(safe-area-inset-bottom, 0px);
   --spacing-safe-left: env(safe-area-inset-left, 0px);
   --spacing-safe-right: env(safe-area-inset-right, 0px);
 
-  /* ===== Shadow tokens (light mode only — never applied in dark) ===== */
-  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.04),
-    0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-popover: 0 4px 12px rgba(0, 0, 0, 0.08),
-    0 8px 32px rgba(0, 0, 0, 0.06);
-
-  /* ===== Motion tokens ===== */
+  /* Motion tokens (Global_Design_Rules §3, Design_System §2.5) */
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-slow: 300ms;
-  --duration-phase: 450ms; /* generation screen phase crossfade */
-
+  --duration-phase: 450ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* ===== Light mode override =====
-   Add `class="light"` to <html> to apply. Tokens are overridden at :root
-   so every utility (bg-background, text-foreground, etc.) picks them up
-   automatically. */
-:root.light {
-  --color-background: #F5EFE6;
-  --color-foreground: #1A1A1A;
-  --color-card: #FBF7F0;
-  --color-card-foreground: #1A1A1A;
-  --color-popover: #FFFFFF;
-  --color-popover-foreground: #1A1A1A;
-  --color-primary: #C1272D;
-  --color-primary-foreground: #F5EFE6;
-  --color-secondary: #EAE2D4;
-  --color-secondary-foreground: #1A1A1A;
-  --color-muted: #EAE2D4;
-  --color-muted-foreground: #6A6359;
-  --color-accent: #EAE2D4;
-  --color-accent-foreground: #1A1A1A;
-  --color-destructive: #C1272D;
-  --color-destructive-foreground: #F5EFE6;
-  --color-border: #D9D2C4;
-  --color-input: #D9D2C4;
-  --color-ring: #C1272D;
+/* ===== .dark — applied via class on <html> ===== */
+.dark {
+  --background: oklch(0.1591 0 0);
+  --foreground: oklch(0.9543 0.0136 78.2625);
+  --card: oklch(0.2002 0 0);
+  --card-foreground: oklch(0.9543 0.0136 78.2625);
+  --popover: oklch(0.2002 0 0);
+  --popover-foreground: oklch(0.9543 0.0136 78.2625);
+  --primary: oklch(0.5882 0.2309 28.2936);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.2686 0 0);
+  --secondary-foreground: oklch(0.9543 0.0136 78.2625);
+  --muted: oklch(0.2178 0 0);
+  --muted-foreground: oklch(0.6862 0 0);
+  --accent: oklch(0.2002 0 0);
+  --accent-foreground: oklch(0.5882 0.2309 28.2936);
+  --destructive: oklch(0.5882 0.2309 28.2936);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.2686 0 0);
+  --input: oklch(0.2002 0 0);
+  --ring: oklch(0.5882 0.2309 28.2936);
 
-  --color-shell: #EAE2D4;
-  --color-panel-elev: #FFFFFF;
-  --color-primary-hover: #8F1D22;
-  --color-primary-soft: rgba(193, 39, 45, 0.10);
+  --chart-1: oklch(0.5882 0.2309 28.2936);
+  --chart-2: oklch(0.7090 0 0);
+  --chart-3: oklch(0.5555 0 0);
+  --chart-4: oklch(0.4386 0 0);
+  --chart-5: oklch(0.2686 0 0);
+
+  --sidebar: oklch(0.1591 0 0);
+  --sidebar-foreground: oklch(0.9543 0.0136 78.2625);
+  --sidebar-primary: oklch(0.5882 0.2309 28.2936);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.2002 0 0);
+  --sidebar-accent-foreground: oklch(0.5882 0.2309 28.2936);
+  --sidebar-border: oklch(0.2686 0 0);
+  --sidebar-ring: oklch(0.5882 0.2309 28.2936);
+
+  /* No drop shadows in dark — depth via border + card/popover step. */
+  --shadow-x: 0px;
+  --shadow-y: 0px;
+  --shadow-blur: 0px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0;
+  --shadow-color: 0, 0, 0;
+  --shadow-2xs: 0px 0px 0px 0px hsl(0 0% 0% / 0);
+  --shadow-xs: 0px 0px 0px 0px hsl(0 0% 0% / 0);
+  --shadow-sm: 0px 0px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
+  --shadow: 0px 0px 0px 0px hsl(0 0% 0% / 0), 0px 1px 2px -1px hsl(0 0% 0% / 0);
+  --shadow-md: 0px 0px 0px 0px hsl(0 0% 0% / 0), 0px 2px 4px -1px hsl(0 0% 0% / 0);
+  --shadow-lg: 0px 0px 0px 0px hsl(0 0% 0% / 0), 0px 4px 6px -1px hsl(0 0% 0% / 0);
+  --shadow-xl: 0px 0px 0px 0px hsl(0 0% 0% / 0), 0px 8px 10px -1px hsl(0 0% 0% / 0);
+  --shadow-2xl: 0px 0px 0px 0px hsl(0 0% 0% / 0);
+
+  /* Clevroy extensions also re-tone for dark mode */
+  --primary-hover: oklch(0.5300 0.2200 28.2936);
+  --primary-soft: oklch(0.5882 0.2309 28.2936 / 0.20);
 }
 
-/* ===== Typography scale (Design System §3) =====
-   Sizes are rem-based so browser-level font resizing scales correctly
-   (WCAG 2.2 AA, Design System §11.5). Root = 16px. */
+/* ===== shadcn / Tailwind v4 token mapping ===== */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Clevroy custom colors */
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  /* Radius — derived from --radius (0.75rem = 12px) */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 12px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-normal: var(--tracking-normal);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+}
+
+/* ===== Typography scale (UI_Design_System §3) =====
+   Sizes are rem-based for browser font-resize (WCAG 2.2 AA, §11.5). */
+
 @utility text-display-xl {
   font-family: var(--font-serif);
   font-size: 4.5rem;      /* 72px */
@@ -203,45 +330,31 @@
   font-weight: 500;
 }
 
-/* ===== Base element styles ===== */
+/* ===== Base layer ===== */
 @layer base {
   * {
-    border-color: var(--color-border);
+    @apply border-border outline-ring/50;
   }
-
   html,
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: var(--font-sans);
+    letter-spacing: var(--tracking-normal);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-  }
-
-  /* Dynamic viewport on mobile so collapsing browser chrome doesn't shift
-     generation-screen layout — Design System §10.3. */
-  html,
-  body,
-  #__next {
     min-height: 100dvh;
   }
-
-  :focus-visible {
-    outline: 2px solid var(--color-ring);
-    outline-offset: 2px;
-  }
-
-  /* Muted Ink Dark (#9A9A9A) fails AA below 14px — guard against misuse. */
   ::selection {
-    background-color: var(--color-primary-soft);
-    color: var(--color-foreground);
+    background-color: var(--primary-soft);
+    color: var(--foreground);
   }
 }
 
-/* ===== Reduced motion (Design System §2.5, §11.4, CC-2) =====
-   All durations collapse to 0 except the phase crossfade, which stays at
-   150ms so phase changes still feel intentional rather than popping. */
+/* ===== Reduced motion (Global_Design_Rules §3, Design_System §11.4, CC-2) =====
+   All durations collapse except phase narration, which stays at 150ms so the
+   phase change still feels intentional rather than popping. */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-fast: 0ms;
@@ -251,9 +364,7 @@
   }
 }
 
-/* Manual override — Settings > Preferences > Reduce motion forces the same
-   token values regardless of system preference. The app toggles the class
-   via the UI store. */
+/* Manual override — Settings > Preferences > Reduce motion (Zustand-backed). */
 html[data-reduced-motion="true"] {
   --duration-fast: 0ms;
   --duration-base: 0ms;

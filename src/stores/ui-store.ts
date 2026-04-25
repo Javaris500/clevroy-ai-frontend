@@ -25,7 +25,10 @@ export interface UIState {
 export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
-      theme: "dark",
+      // Theme v2 default — system-first; persisted choice wins on subsequent
+      // visits. The initial paint goes through themeInitScript in <head> so
+      // there's no light-mode flash on dark devices.
+      theme: "system",
       sidebarCollapsed: false,
       reducedMotionOverride: null,
 

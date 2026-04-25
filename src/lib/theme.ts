@@ -8,26 +8,26 @@ const SYSTEM_DARK_QUERY = "(prefers-color-scheme: dark)";
 
 function resolveTheme(preference: ThemePreference): "light" | "dark" {
   if (preference !== "system") return preference;
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   return window.matchMedia(SYSTEM_DARK_QUERY).matches ? "dark" : "light";
 }
 
 /**
- * Applies the resolved theme as a class on <html>. Baseline tokens in
- * globals.css are dark; the `light` class triggers the :root.light overrides.
- * Design System §2.1.
+ * Applies the resolved theme as a class on <html>.
+ *
+ * Theme v2 (docs/Clevroy_Theme_v2.css): light is the :root default; the
+ * `.dark` class triggers the dark token overrides via
+ * `@custom-variant dark (&:is(.dark *))` in app/globals.css.
  */
 function applyTheme(preference: ThemePreference) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   const resolved = resolveTheme(preference);
-  root.classList.toggle("light", resolved === "light");
+  root.classList.toggle("dark", resolved === "dark");
+  // Clean up the legacy v1 class if it's lingering from a prior session.
+  root.classList.remove("light");
 }
 
-/**
- * Writes the reduced-motion override to a data attribute on <html>.
- * The CSS in globals.css keys off `html[data-reduced-motion="true"]`.
- */
 function applyReducedMotion(override: boolean | null) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
@@ -39,9 +39,9 @@ function applyReducedMotion(override: boolean | null) {
 }
 
 /**
- * Mount this once at the root of the app (e.g. inside app/layout.tsx's
- * client shell). It keeps the <html> classes in sync with the Zustand
- * store and reacts to system-preference changes when theme is "system".
+ * Mount once at the root (via <ThemeSync />). Keeps <html> in sync with the
+ * Zustand store and reacts to system-preference changes when theme is
+ * "system".
  */
 export function useApplyTheme(): void {
   const theme = useUIStore((s) => s.theme);
@@ -62,14 +62,19 @@ export function useApplyTheme(): void {
 }
 
 /**
- * Synchronous script injected into <head> before React hydrates so the
- * user never sees a light-mode flash before the stored preference kicks in.
+ * Synchronous script injected into <head> before React hydrates. Reads the
+ * persisted preference from localStorage and applies the .dark class so the
+ * page never paints a wrong-mode flash on first frame.
+ *
+ * Falls back to the user's system preference when no persisted choice exists.
+ * That fallback is what makes the v2 default of "light :root" behave like
+ * "dark on dark devices" by default — system-first, persisted choice wins.
  */
 export const themeInitScript = `
 (function() {
   try {
     var raw = localStorage.getItem('clevroy.ui');
-    var pref = 'dark';
+    var pref = 'system';
     var rm = null;
     if (raw) {
       var parsed = JSON.parse(raw);
@@ -81,7 +86,7 @@ export const themeInitScript = `
     if (pref === 'system') {
       resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-    if (resolved === 'light') document.documentElement.classList.add('light');
+    if (resolved === 'dark') document.documentElement.classList.add('dark');
     if (rm === true) document.documentElement.setAttribute('data-reduced-motion', 'true');
   } catch (e) {}
 })();

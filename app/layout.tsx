@@ -3,6 +3,7 @@ import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeSync } from "@/components/providers/theme-sync";
 import { themeInitScript } from "@/lib/theme";
 
@@ -62,7 +63,9 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeSync />
-        <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+        <QueryProvider>
+          <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+        </QueryProvider>
         <Toaster position="bottom-right" />
       </body>
     </html>
