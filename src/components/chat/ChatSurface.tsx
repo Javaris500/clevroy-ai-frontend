@@ -37,6 +37,13 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Card } from "@/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -49,8 +56,15 @@ import { useInProgressFilm, useRecentFilms } from "@/hooks/use-films";
 import { useDraftText } from "@/hooks/use-draft-text";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { usePhaseWalker } from "@/hooks/use-phase-walker";
+import { ChevronDown, Save } from "lucide-react";
+import { toast } from "sonner";
 import type { FileUIPart } from "ai";
 import { useMessages } from "@/stores/chat-store";
+import {
+  deriveDraftTitle,
+  useLibraryStore,
+} from "@/stores/library-store";
+import { library } from "@/lib/copy";
 import {
   ASPECTS,
   STYLE_PRESETS,
@@ -785,11 +799,80 @@ function SubmitConsumer({
           <VoiceInputButton disabled={disabled} />
           <AspectToggle value={aspect} onChange={onAspectChange} />
         </PromptInputTools>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <SaveDraftMenu disabled={disabled} aspect={aspect} />
           <RollButton disabled={disabled} />
         </div>
       </PromptInputFooter>
     </PromptInput>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Save-as-draft overflow — captures the current textarea + aspect + style
+// into `library-store.drafts` so the user can come back to it from
+// /library/drafts. See docs/Clevroy_Library_Prompt.md §6.
+// ---------------------------------------------------------------------------
+
+function SaveDraftMenu({
+  disabled,
+  aspect,
+}: {
+  disabled?: boolean;
+  aspect: Aspect;
+}) {
+  const { textInput } = usePromptInputController();
+  const style = useStyle();
+  const addDraft = useLibraryStore((s) => s.addDraft);
+
+  const isEmpty = textInput.value.trim().length === 0;
+  const isDisabled = disabled || isEmpty;
+
+  const handleSaveAsDraft = () => {
+    const script = textInput.value.trim();
+    if (!script) return;
+    addDraft({
+      title: deriveDraftTitle(script),
+      script,
+      style,
+      aspect,
+    });
+    toast.success(library.drafts.savedToast);
+    textInput.clear();
+  };
+
+  const handleClear = () => {
+    textInput.clear();
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label="Input actions"
+          disabled={isDisabled}
+          className={cn(
+            "inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors",
+            "hover:bg-accent hover:text-foreground",
+            "disabled:pointer-events-none disabled:opacity-40",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          )}
+        >
+          <ChevronDown className="size-4" aria-hidden="true" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={handleSaveAsDraft}>
+          <Save className="size-3.5" aria-hidden="true" />
+          {library.drafts.saveAsDraft}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={handleClear}>
+          Clear input
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

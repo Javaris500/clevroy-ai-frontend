@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BookMarked,
   Clapperboard,
   FolderOpen,
   Home,
@@ -34,12 +35,18 @@ type TabSlot = {
 /**
  * 5-slot tab bar order — sourced from the locked `navLinks` registry so
  * Create stays in the center slot. Don't shuffle.
+ *
+ * TODO(nav): bottom tab bar at 6+ slots; demote AI Twin or Settings to a
+ * profile menu now that Library has joined the primary nav. Sidebar already
+ * shows all six entries; this bar is currently overloaded — the AI Twin slot
+ * has been demoted to make room for Library, and AI Twin lives only in the
+ * sidebar + the "Edit your AI Twin" link inside /library/characters.
  */
 const TAB_ORDER: ReadonlyArray<TabSlot> = [
   { key: "home", ...navLinks.home, icon: Home },
   { key: "projects", ...navLinks.projects, icon: FolderOpen },
   { key: "create", ...navLinks.create, icon: Clapperboard },
-  { key: "aiTwin", ...navLinks.aiTwin, icon: UserSquare },
+  { key: "library", ...navLinks.library, icon: BookMarked },
   { key: "settings", ...navLinks.settings, icon: Settings },
 ];
 
