@@ -990,6 +990,9 @@ export const navLinks = {
   // there is no redirect hop. The `create` key is preserved because both
   // Sidebar and BottomTabBar reference it by name.
   create: { label: "New film", href: "/home" },
+  // --- Templates additions (parallel-safe) ---
+  templates: { label: "Templates", href: "/templates" },
+  // --- End Templates additions ---
   // --- Library additions (parallel-safe) ---
   library: { label: "Library", href: "/library" },
   // --- End Library additions ---
@@ -998,6 +1001,54 @@ export const navLinks = {
 } as const;
 
 export type NavLinkKey = keyof typeof navLinks;
+
+// ---------------------------------------------------------------------------
+// /templates — curated browse-and-use gallery (Clevroy_Templates_Prompt.md).
+// Templates is the public-facing front door for users who don't know what to
+// type. "films" surface language; banned vocabulary applies. Categories
+// mirror the keys in src/lib/templates/data.ts TemplateCategory.
+// ---------------------------------------------------------------------------
+
+export const templates = {
+  pageTitle: "Templates",
+  subline: "Start from something we've shot.",
+  featured: { eyebrow: "Editor's picks" },
+  filter: {
+    all: "All",
+    drama: "Drama",
+    comedy: "Comedy",
+    documentary: "Documentary",
+    horror: "Horror",
+    romance: "Romance",
+    trailer: "Trailer",
+    short: "Short",
+    music: "Music video",
+  },
+  searchPlaceholder: "Search templates",
+  card: {
+    useCta: "Use",
+    saveAria: "Save to Library",
+    unsaveAria: "Remove from Library",
+  },
+  detail: {
+    sectionDescription: "About this template",
+    sectionScript: "Script",
+    sectionIncluded: "What's included",
+    showFullScript: "Show full script",
+    collapseScript: "Collapse script",
+    useCta: "Use this template",
+    saveCta: "Save to Library",
+    saveAgainCta: "Saved",
+    close: "Close",
+    muteAria: "Mute preview",
+    unmuteAria: "Unmute preview",
+  },
+  emptyResults: "No templates match.",
+  emptyCategory: "No templates in this category yet.",
+  clearSearch: "Clear search",
+  savedToast: "Saved to Library.",
+  unsavedToast: "Removed from Library.",
+} as const;
 
 export const sidebar = {
   /** Wordmark return-to-root link, screen-reader name. The visible mark is

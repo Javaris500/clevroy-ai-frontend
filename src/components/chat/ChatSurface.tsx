@@ -1090,6 +1090,44 @@ function ThreadMessages({ filmId }: { filmId: string | null | undefined }) {
 // Mode views
 // ---------------------------------------------------------------------------
 
+// Read-and-clear sessionStorage prefill. /templates "Use this template" and
+// /onboarding step 5 both write the three keys before routing to /home;
+// EmptyView consumes them once on mount and clears so a refresh doesn't
+// re-apply.
+const PREFILL_KEY = "clevroy:home:prefill";
+const PREFILL_STYLE_KEY = "clevroy:home:prefill-style";
+const PREFILL_ASPECT_KEY = "clevroy:home:prefill-aspect";
+
+function readPrefill(): {
+  text: string | null;
+  style: StylePreset | null;
+  aspect: Aspect | null;
+} {
+  if (typeof window === "undefined") {
+    return { text: null, style: null, aspect: null };
+  }
+  let text: string | null = null;
+  let style: StylePreset | null = null;
+  let aspect: Aspect | null = null;
+  try {
+    text = window.sessionStorage.getItem(PREFILL_KEY);
+    const rawStyle = window.sessionStorage.getItem(PREFILL_STYLE_KEY);
+    if (rawStyle && (STYLE_PRESETS as ReadonlyArray<string>).includes(rawStyle)) {
+      style = rawStyle as StylePreset;
+    }
+    const rawAspect = window.sessionStorage.getItem(PREFILL_ASPECT_KEY);
+    if (rawAspect && (ASPECTS as ReadonlyArray<string>).includes(rawAspect)) {
+      aspect = rawAspect as Aspect;
+    }
+    window.sessionStorage.removeItem(PREFILL_KEY);
+    window.sessionStorage.removeItem(PREFILL_STYLE_KEY);
+    window.sessionStorage.removeItem(PREFILL_ASPECT_KEY);
+  } catch {
+    // sessionStorage may be unavailable — silent.
+  }
+  return { text, style, aspect };
+}
+
 function EmptyView({
   firstName,
   onSubmit,
@@ -1103,6 +1141,19 @@ function EmptyView({
   const setAspect = useSetAspect();
   const style = useStyle();
   const setStyle = useSetStyle();
+  const { textInput } = usePromptInputController();
+
+  // Apply any pending prefill once on mount. The keys are read-and-clear so
+  // a refresh after a template hand-off lands on /home empty.
+  const prefillAppliedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (prefillAppliedRef.current) return;
+    prefillAppliedRef.current = true;
+    const { text, style: prefillStyle, aspect: prefillAspect } = readPrefill();
+    if (text && text.length > 0) textInput.setInput(text);
+    if (prefillStyle) setStyle(prefillStyle);
+    if (prefillAspect) setAspect(prefillAspect);
+  }, [textInput, setStyle, setAspect]);
 
   // Item 13. Layout is the same DOM, two layouts:
   //   - Mobile: welcome at top, suggestions below it, mt-auto pushes the
