@@ -12,6 +12,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
   confirmVerbPairs,
   type ConfirmVerbKey,
 } from "@/lib/copy";
@@ -56,10 +65,18 @@ const DESTRUCTIVE_VERB_KEYS: ReadonlyArray<ConfirmVerbKey> = [
  * voice stays consistent ("Keep it / Delete it" never drifts to "Cancel /
  * OK").
  *
+ * Layout_Enhancements B.26 — on `<md` viewports the surface switches from a
+ * centered Dialog to a bottom Sheet. iOS users expect bottom sheets for
+ * confirmations (a centered modal with a backdrop tap-to-dismiss feels web,
+ * not native). The same prop API drives both surfaces; the only consumer
+ * change is "now you get a native-feeling sheet on mobile for free." Affects
+ * every caller: reshoot confirm, delete confirm, cancel-generation, sign-out
+ * during generation, account delete.
+ *
  * On the focus model:
  *   - Default focus lands on the cancel button (safer outcome wins).
- *   - Escape closes the dialog without firing onConfirm.
- *   - Enter inside the dialog activates the focused button only.
+ *   - Escape closes the surface without firing onConfirm.
+ *   - Enter inside the surface activates the focused button only.
  */
 export function ConfirmDialog({
   open,
@@ -78,10 +95,57 @@ export function ConfirmDialog({
   const resolvedConfirm = confirmLabel ?? pair.confirm;
   const isDestructive =
     destructive ?? DESTRUCTIVE_VERB_KEYS.includes(verbs);
+  const isMobile = useIsMobile();
 
   const handleConfirm = async () => {
     await onConfirm();
   };
+
+  const buttons = (
+    <>
+      <Button
+        variant="outline"
+        onClick={() => onOpenChange(false)}
+        disabled={pending}
+      >
+        {resolvedCancel}
+      </Button>
+      <Button
+        variant={isDestructive ? "destructive" : "default"}
+        onClick={handleConfirm}
+        disabled={pending}
+        autoFocus={false}
+      >
+        {resolvedConfirm}
+      </Button>
+    </>
+  );
+
+  // Render-once branch on viewport so each surface keeps its own focus trap
+  // and animation primitives intact. shadcn's Sheet already wraps Radix's
+  // dialog primitives so accessibility (focus trap, escape, aria-modal) is
+  // identical between the two — only the visual treatment differs.
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="bottom"
+          // Phone bottom sheet — pulled-up corners, room above the home
+          // indicator. The shadcn primitive itself respects safe-area on its
+          // children; we just pad the bottom for the indicator strip.
+          className="rounded-t-xl pb-[max(env(safe-area-inset-bottom,0px),16px)]"
+        >
+          <SheetHeader>
+            <SheetTitle>{title}</SheetTitle>
+            {body ? <SheetDescription>{body}</SheetDescription> : null}
+          </SheetHeader>
+          <SheetFooter className="mt-4 flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            {buttons}
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -90,23 +154,7 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           {body ? <DialogDescription>{body}</DialogDescription> : null}
         </DialogHeader>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={pending}
-          >
-            {resolvedCancel}
-          </Button>
-          <Button
-            variant={isDestructive ? "destructive" : "default"}
-            onClick={handleConfirm}
-            disabled={pending}
-            autoFocus={false}
-          >
-            {resolvedConfirm}
-          </Button>
-        </DialogFooter>
+        <DialogFooter>{buttons}</DialogFooter>
       </DialogContent>
     </Dialog>
   );

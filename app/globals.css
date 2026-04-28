@@ -23,25 +23,31 @@
 
 /* ===== :root — light, default ===== */
 :root {
-  /* Theme v2 base */
-  --background: oklch(0.9543 0.0136 78.2625);
+  /* Cream tones — Anthropic / Claude.ai canonical:
+   *   page bg     #FAF9F5  oklch(0.9778 0.0058 91.7)
+   *   secondary   #F0EEE6  oklch(0.9444 0.0093 91.7)
+   *   border      #E8E5DC  oklch(0.9116 0.0145 87.0)
+   *   muted text  #6F6B5F  oklch(0.5031 0.0093 91.7)
+   * Cards stay pure white so content surfaces pop on the cream page.
+   */
+  --background: oklch(0.9778 0.0058 91.7);
   --foreground: oklch(0.1591 0 0);
-  --card: oklch(0.9773 0.0102 81.7952);
+  --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0.1591 0 0);
-  --popover: oklch(0.9773 0.0102 81.7952);
+  --popover: oklch(1.0000 0 0);
   --popover-foreground: oklch(0.1591 0 0);
   --primary: oklch(0.5882 0.2309 28.2936);
   --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.9062 0.0167 79.3472);
+  --secondary: oklch(0.9444 0.0093 91.7);
   --secondary-foreground: oklch(0.1591 0 0);
-  --muted: oklch(0.9214 0.0166 79.3486);
-  --muted-foreground: oklch(0.5031 0.0178 76.9461);
-  --accent: oklch(0.9773 0.0102 81.7952);
+  --muted: oklch(0.9444 0.0093 91.7);
+  --muted-foreground: oklch(0.5031 0.0093 91.7);
+  --accent: oklch(0.9444 0.0093 91.7);
   --accent-foreground: oklch(0.5882 0.2309 28.2936);
   --destructive: oklch(0.5882 0.2309 28.2936);
   --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.8655 0.0205 84.5921);
-  --input: oklch(0.9773 0.0102 81.7952);
+  --border: oklch(0.9116 0.0145 87.0);
+  --input: oklch(0.9444 0.0093 91.7);
   --ring: oklch(0.5882 0.2309 28.2936);
 
   --chart-1: oklch(0.5882 0.2309 28.2936);
@@ -50,13 +56,13 @@
   --chart-4: oklch(0.7448 0.0180 76.0692);
   --chart-5: oklch(0.8655 0.0205 84.5921);
 
-  --sidebar: oklch(0.9543 0.0136 78.2625);
+  --sidebar: oklch(0.9778 0.0058 91.7);
   --sidebar-foreground: oklch(0.1591 0 0);
   --sidebar-primary: oklch(0.5882 0.2309 28.2936);
   --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.9773 0.0102 81.7952);
+  --sidebar-accent: oklch(0.9444 0.0093 91.7);
   --sidebar-accent-foreground: oklch(0.5882 0.2309 28.2936);
-  --sidebar-border: oklch(0.8655 0.0205 84.5921);
+  --sidebar-border: oklch(0.9116 0.0145 87.0);
   --sidebar-ring: oklch(0.5882 0.2309 28.2936);
 
   /* === Font families — OVERRIDE v2's Georgia/Menlo defaults ===
@@ -97,7 +103,6 @@
   --warning: oklch(0.6800 0.1300 70.0);
 
   /* Spacing extensions (Design_System §10.3) */
-  --spacing-shell-gap: 12px;
   --spacing-safe-top: env(safe-area-inset-top, 0px);
   --spacing-safe-bottom: env(safe-area-inset-bottom, 0px);
   --spacing-safe-left: env(safe-area-inset-left, 0px);
@@ -140,7 +145,13 @@
   --chart-4: oklch(0.4386 0 0);
   --chart-5: oklch(0.2686 0 0);
 
-  --sidebar: oklch(0.1591 0 0);
+  /* Sidebar slightly deeper than --background so the panel reads as one
+   * surface step lower than the inset. The 0.1303→0.1591→0.2002 stair
+   * (sidebar → background → card) is what makes every card on every page
+   * pop without an extra shadow. Audit 2026-04-28 #1: lifted from 0.1003
+   * to 0.1303 so the seam between sidebar and inset is visible at a glance
+   * on most monitors (the prior step was too subtle to read in dark mode). */
+  --sidebar: oklch(0.1303 0 0);
   --sidebar-foreground: oklch(0.9543 0.0136 78.2625);
   --sidebar-primary: oklch(0.5882 0.2309 28.2936);
   --sidebar-primary-foreground: oklch(1.0000 0 0);
@@ -168,6 +179,7 @@
   /* Clevroy extensions also re-tone for dark mode */
   --primary-hover: oklch(0.5300 0.2200 28.2936);
   --primary-soft: oklch(0.5882 0.2309 28.2936 / 0.20);
+
 }
 
 /* ===== shadcn / Tailwind v4 token mapping ===== */
@@ -371,3 +383,182 @@ html[data-reduced-motion="true"] {
   --duration-slow: 0ms;
   --duration-phase: 150ms;
 }
+
+/* ===== Loader / spinner keyframes =====
+   Cinematic filmstrip loader (src/components/ui/spinner.tsx). Three rects
+   pulse in a left-to-right wave; the keyframe holds at low opacity for the
+   bulk of the cycle and brightens briefly so the wave reads as a frame
+   "advancing" rather than a fade. Tweak the 30% beat to retime the strip. */
+@keyframes film-flicker {
+  0%, 65%, 100% {
+    opacity: 0.25;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+/* ===== Sidebar polish (Layout_Enhancements B.28, B.29 + 2026-04-25 brief) =====
+   shadcn's <Sidebar collapsible="icon"> ships unstyled-by-default. These
+   global rules raise the bar to "App Store top tier" without touching
+   nav/Sidebar.tsx (Iyo's territory) or ui/sidebar.tsx (the shadcn
+   primitive). Everything is targeted via the `[data-sidebar="..."]`
+   data-attributes shadcn renders, so the polish travels with any future
+   sidebar instance. */
+
+/* Wider 64px collapsed rail — 56px (default) is too tight for a 24px
+   icon centered with comfortable padding. Bumping the CSS var that
+   shadcn consumes is one line and respects every primitive consuming
+   `--sidebar-width-icon`. */
+:root {
+  --sidebar-width-icon: 4rem;
+}
+
+/* Sidebar boundary in dark — without --sidebar drifting from
+   --background (both oklch 0.1591), a hairline right edge plus a soft
+   inner top highlight is the only thing separating the panel from the
+   frame. */
+.dark [data-sidebar="sidebar"] {
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 4%, transparent);
+}
+
+/* Bigger icons — 24px reads at the same weight as the 14px label text;
+   the shadcn default 16px disappears next to body copy. */
+[data-sidebar="menu-button"] > svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Taller rows — 44px meets the touch-target floor (Global_Design_Rules
+   §7) and gives the active gradient room to breathe. shadcn's default
+   `h-8` shrinks the row even when the user has space for more. */
+[data-sidebar="menu-button"][data-size="default"] {
+  height: 2.75rem;
+}
+
+/* Section labels in caption style — Fraunces this is not, but the
+   Inter caption (uppercase +0.08em) sits closer to the brand "film
+   credits subheader" feel than the default text-xs muted. */
+[data-sidebar="group-label"] {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Generous gap between groups — separates Recent Projects / Resources
+   / Primary nav so each cluster reads as its own thing. Within a group,
+   items stay tight (4px). */
+[data-sidebar="content"] > [data-sidebar="group"] + [data-sidebar="group"] {
+  margin-top: 1rem;
+}
+
+/* Hide the scrollbar on the sidebar content scroller (audit 2026-04-28).
+   shadcn ships `overflow-auto` so the rail can scroll when Recent or
+   Resources push past viewport, but the visible scrollbar reads as
+   chrome-clutter on a panel that's mostly white space. The track is still
+   scrollable via wheel / trackpad / keyboard — only the affordance is
+   hidden. Trade-off: on a short laptop with a long Recent list, users
+   won't see a "more below" hint. Acceptable at the current list size; if
+   the rail grows, swap this for a tinted thumb (`scrollbar-width: thin`
+   + a custom ::-webkit-scrollbar-thumb color) instead of zeroing it. */
+[data-sidebar="content"] {
+  scrollbar-width: none;
+}
+[data-sidebar="content"]::-webkit-scrollbar {
+  display: none;
+}
+[data-sidebar="menu"] {
+  gap: 4px;
+}
+
+/* Footer separation — the FilmBalanceBadge + ProfileChip footer reads
+   as its own surface with a 1px top border in the same sidebar-border
+   tone. */
+[data-sidebar="footer"] {
+  border-top: 1px solid color-mix(in oklch, var(--sidebar-border) 70%, transparent);
+}
+
+/* Hover preview — same indicator language as active, dimmed to ~40%
+   opacity. Trains the eye on what active looks like before the click. */
+[data-sidebar="menu-button"]:not([data-active="true"]):hover::before {
+  content: "";
+  position: absolute;
+  left: 0.125rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 2px;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--primary) 40%, transparent);
+  pointer-events: none;
+}
+[data-sidebar="menu-button"] {
+  position: relative;
+}
+
+/* === Active state === Defect #5 (audit 2026-04-25). The previous
+   full-row gradient + pulsing rim read as alert/celebration. The new
+   gesture is the Linear-style restraint the audit prescribed: a quiet
+   primary-soft tint, primary text color, and a 4px primary-color left
+   bar. Same gesture mirrors on the BottomTabBar (top bar, see
+   src/components/nav/BottomTabBar.tsx). */
+[data-sidebar="menu-button"][data-active="true"] {
+  position: relative;
+  background-color: var(--primary-soft);
+  color: var(--primary);
+}
+[data-sidebar="menu-button"][data-active="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 4px;
+  border-radius: 0 9999px 9999px 0;
+  background: var(--primary);
+  pointer-events: none;
+}
+
+/* Collapsed (icon-rail) active state — same gesture, just inset the
+   bar a hair so the rounded icon button doesn't visually clash with
+   the indicator. */
+[data-collapsible="icon"] [data-sidebar="menu-button"][data-active="true"]::after {
+  left: 0.125rem;
+}
+
+/* ===== Capacitor / iOS native shell support =====
+   Two pre-submission fixes (Layout_Enhancements §Capacitor) that show up
+   only when the Next.js app is wrapped in Capacitor v7. Both are safe in
+   the web build because the env() values fall back to 0 and the
+   overscroll behavior is desktop-friendly.
+
+   Capacitor-1: shadcn renders <Sidebar> as a <Sheet> on mobile (sidebar
+   .tsx §201). The sheet's content starts at viewport top, which on a
+   notched iPhone places the wordmark and first nav item under the status
+   bar. Padding the mobile sheet container by safe-area-inset-top pushes
+   the rail's content cleanly below the notch. The desktop sidebar lives
+   inside RoundedShell whose outer frame already accounts for safe-area,
+   so it's untouched.
+
+   Capacitor-2: iOS rubber-band scroll on the outer frame surfaces the
+   bg-sidebar tone when the user overscrolls — visually jarring inside a
+   "screening room" frame. Killing it on html/body removes the bounce on
+   the chrome; SidebarInset opts back into a *contained* rubber-band via
+   `overscroll-behavior: contain` so its own content can still bounce
+   locally without chaining to the body. */
+[data-sidebar="sidebar"][data-mobile="true"] {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+html,
+body {
+  overscroll-behavior-y: none;
+}
+[data-app-inset="true"] {
+  overscroll-behavior-y: contain;
+}
+

@@ -103,12 +103,27 @@ const SidebarProvider = React.forwardRef<
     }, [isMobile, setOpen, setOpenMobile])
 
     // Adds a keyboard shortcut to toggle the sidebar.
+    //
+    // Clevroy patch (audit 2026-04-28 #9): bail when the user is typing in
+    // an input/textarea/contenteditable so Cmd/Ctrl-B doesn't hijack the
+    // universal "bold" shortcut while the chat input or any text field is
+    // focused. Re-apply this guard after future shadcn upgrades — the
+    // upstream primitive does not include it.
     React.useEffect(() => {
+      const isEditableTarget = (target: EventTarget | null) => {
+        if (!(target instanceof HTMLElement)) return false
+        if (target instanceof HTMLInputElement) return true
+        if (target instanceof HTMLTextAreaElement) return true
+        if (target.isContentEditable) return true
+        return false
+      }
+
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
           event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
           (event.metaKey || event.ctrlKey)
         ) {
+          if (isEditableTarget(event.target)) return
           event.preventDefault()
           toggleSidebar()
         }
@@ -187,7 +202,7 @@ const Sidebar = React.forwardRef<
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+            "flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground",
             className
           )}
           ref={ref}
@@ -204,7 +219,7 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -234,24 +249,24 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "relative w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear",
+            "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
             "group-data-[collapsible=offcanvas]:w-0",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_var(--spacing)_*_4)]"
+              : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
           )}
         />
         <div
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
+            "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
             // Adjust the padding for floating and inset variants.
             variant === "floating" || variant === "inset"
-              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
+              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_var(--spacing)_*_4_+_2px)]"
+              : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
             className
           )}
           {...props}
@@ -333,7 +348,12 @@ const SidebarInset = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex w-full flex-1 flex-col bg-background",
-        "md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+        // Clevroy patch (audit 2026-04-28): bumped m-2 → m-3 and rounded-xl
+        // → rounded-2xl so the inset's rounded corners read at a glance, and
+        // added a 1px sidebar-border outline so the seam is visible in dark
+        // mode (where shadows collapse to 0px). The shadcn defaults sit
+        // flush against the rail and look like one continuous surface.
+        "md:peer-data-[variant=inset]:m-3 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-3 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-2xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:border-sidebar-border md:peer-data-[variant=inset]:shadow-lg",
         className
       )}
       {...props}
@@ -587,13 +607,21 @@ const SidebarMenuButton = React.forwardRef<
       }
     }
 
+    // Clevroy patch (audit 2026-04-28): collapsed-rail tooltips need to read
+    // confidently against the dark sidebar surface. The default popover bg +
+    // 14px padding looks thin; we override to a foreground/background flip
+    // with a touch more padding and a softer shadow so the label feels like
+    // a stand-alone affordance rather than a faint overlay. sideOffset is
+    // bumped from 4 → 8 so it clears the active-row indicator.
     return (
       <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
         <TooltipContent
           side="right"
           align="center"
+          sideOffset={8}
           hidden={state !== "collapsed" || isMobile}
+          className="border-0 bg-foreground px-3 py-1.5 text-sm font-medium text-background shadow-lg"
           {...tooltip}
         />
       </Tooltip>

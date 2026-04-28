@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 
-import { Toaster } from "@/components/ui/sonner";
+import { ResponsiveToaster } from "@/components/shell/ResponsiveToaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeSync } from "@/components/providers/theme-sync";
@@ -66,7 +66,7 @@ export default function RootLayout({
         <QueryProvider>
           <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
         </QueryProvider>
-        <Toaster position="bottom-right" />
+        <ResponsiveToaster />
       </body>
     </html>
   );

@@ -1,0 +1,23 @@
+/* Pulse for the `pending` and `active` pill border.
+   1.2s cycle per Design_System §8.5. Disabled under prefers-reduced-motion
+   (CC-2) — the state is still visible because the filled border color remains. */
+
+.pulseBorder {
+  animation: clevroy-scene-pill-pulse 1200ms ease-in-out infinite;
+}
+
+@keyframes clevroy-scene-pill-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulseBorder {
+    animation: none;
+  }
+}

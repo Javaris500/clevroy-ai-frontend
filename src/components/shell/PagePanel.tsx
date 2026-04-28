@@ -24,6 +24,18 @@ export interface PagePanelProps
  *     "Roomy" rhythm per Global_Design_Rules §4)
  *   - default 12px-radius card on top of the main panel surface
  *
+ * Layout_Enhancements B.20 — padding scales by **container width**, not
+ * viewport. The outer <section> declares `@container/page` so the inner
+ * wrapper's `p-6 @md:p-8` reflows when the panel is squeezed by an open
+ * sidebar on a small laptop, the same way it reflows on phone width.
+ *
+ * 2026-04-25 brief — merged-header pivot: PagePanel's title row is no
+ * longer position:sticky. The (app) layout's app-header is now the sole
+ * sticky bar and surfaces a pathname-derived breadcrumb. Page-level
+ * actions (`headerAction`) scroll with content; if a page needs a
+ * sticky action, it lifts that into the layout via a future header slot
+ * rather than dueling sticky bars.
+ *
  * If you need a chip or action button next to the title, pass it as
  * `headerAction`. For deeper subsection structure inside the page, use
  * <SectionHeader />.
@@ -40,28 +52,29 @@ export function PagePanel({
   return (
     <section
       className={cn(
-        "rounded-lg bg-card text-card-foreground",
-        flush ? "" : "p-6 md:p-8",
+        "@container/page rounded-lg bg-card text-card-foreground",
         className
       )}
       {...rest}
     >
-      {(title || subline || headerAction) && (
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0 flex-1 space-y-1">
-            {title ? <h1 className="text-h1">{title}</h1> : null}
-            {subline ? (
-              <p className="text-body text-muted-foreground">{subline}</p>
-            ) : null}
+      <div className={flush ? "" : "p-6 @md:p-8"}>
+        {(title || subline || headerAction) && (
+          <header className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-1">
+              {title ? <h1 className="text-h1">{title}</h1> : null}
+              {subline ? (
+                <p className="text-body text-muted-foreground">{subline}</p>
+              ) : null}
+            </div>
+            {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
+          </header>
+        )}
+        {children !== undefined && children !== null ? (
+          <div className={cn(title || subline || headerAction ? "mt-8" : "")}>
+            {children}
           </div>
-          {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
-        </header>
-      )}
-      {children !== undefined && children !== null ? (
-        <div className={cn(title || subline || headerAction ? "mt-8" : "")}>
-          {children}
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </section>
   );
 }
